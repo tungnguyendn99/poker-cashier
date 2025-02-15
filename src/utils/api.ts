@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: process.env.API_URL, // Use the API URL from env
+  baseURL: 'https://ecommerce-nestjs-sq4m.onrender.com', // Use the API URL from env
   headers: {
     'Content-Type': 'application/json'
   }
