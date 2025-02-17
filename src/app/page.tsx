@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -9,7 +10,7 @@ export default function Home() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
-  const [idTable, setIdTable] = useState<number>();
+  const [tableInfo, setTableInfo] = useState<any>();
   const [players, setPlayers] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -45,11 +46,8 @@ export default function Home() {
   const handleOpenDetails = (id: string) => {
     API.get(`/api/v1/tables/${id}`)
       .then((response) => {
-        console.log('response', response);
-        setIdTable(response.data.id);
+        setTableInfo(response.data);
         setPlayers(response.data.players);
-        console.log('setTableInfo', players);
-
         setLoading(false);
         setIsOpen(true);
       })
@@ -95,13 +93,11 @@ export default function Home() {
   const handleDeletePlayer = (name: string) => {
     const playersEdit = players.filter((p) => p.name !== name);
     setPlayers(playersEdit);
-    console.log('playersEdit', playersEdit);
-    console.log('players123', players);
   };
 
   const handleSave = async () => {
     try {
-      const response = await API.patch(`/api/v1/tables/${idTable}`, {
+      const response = await API.patch(`/api/v1/tables/${tableInfo.id}`, {
         players
       });
       setPlayers(response.data.players);
@@ -113,9 +109,16 @@ export default function Home() {
   };
 
   const handleCreate = async () => {
-    await API.post(`/api/v1/tables/create`);
-    getAllTables();
+    try {
+      await API.post(`/api/v1/tables/create`);
+      getAllTables();
+    } catch (error) {
+      alert(`Please login before creating table.`);
+    }
   };
+
+  const storedUser = localStorage.getItem('user') || '';
+  const user = storedUser ? JSON.parse(storedUser) : {};
 
   return (
     <div>
@@ -244,35 +247,37 @@ export default function Home() {
                 );
               })}
             </div>
-            <div className='btn-container'>
-              <button
-                className='btn-add'
-                type='button'
-                onClick={handleAddPlayer}
-              >
-                Add
-              </button>
-              {isEdit ? (
+            {user.username === tableInfo.host && (
+              <div className='btn-container'>
                 <button
-                  className='btn-edit'
+                  className='btn-add'
                   type='button'
-                  onClick={() => setIsEdit(false)}
+                  onClick={handleAddPlayer}
                 >
-                  View
+                  Add
                 </button>
-              ) : (
-                <button
-                  className='btn-edit'
-                  type='button'
-                  onClick={() => setIsEdit(true)}
-                >
-                  Edit
+                {isEdit ? (
+                  <button
+                    className='btn-edit'
+                    type='button'
+                    onClick={() => setIsEdit(false)}
+                  >
+                    View
+                  </button>
+                ) : (
+                  <button
+                    className='btn-edit'
+                    type='button'
+                    onClick={() => setIsEdit(true)}
+                  >
+                    Edit
+                  </button>
+                )}
+                <button className='btn-save' type='button' onClick={handleSave}>
+                  Save
                 </button>
-              )}
-              <button className='btn-save' type='button' onClick={handleSave}>
-                Save
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
